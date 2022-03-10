@@ -388,10 +388,10 @@ export class CanvasRenderer extends Renderer {
         }
 
         if (isTextInputElement(container) && container.value.length) {
-            const [fontFamily, fontSize] = this.createFontStyle(styles);
-            const {baseline} = this.fontMetrics.getMetrics(fontFamily, fontSize);
+            const [font, fontFamily, fontSize] = this.createFontStyle(styles);
+            const {baseline, middle} = this.fontMetrics.getMetrics(fontFamily, fontSize);
 
-            this.ctx.font = fontFamily;
+            this.ctx.font = font;
             this.ctx.fillStyle = asString(styles.color);
 
             this.ctx.textBaseline = 'alphabetic';
@@ -424,7 +424,7 @@ export class CanvasRenderer extends Renderer {
             this.renderTextWithLetterSpacing(
                 new TextBounds(container.value, textBounds),
                 styles.letterSpacing,
-                baseline
+                baseline + bounds.height / 2 - middle
             );
             this.ctx.restore();
             this.ctx.textBaseline = 'alphabetic';
