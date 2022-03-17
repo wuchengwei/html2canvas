@@ -204,6 +204,11 @@ export class DocumentCloner {
     }
 
     createCanvasClone(canvas: HTMLCanvasElement): HTMLImageElement | HTMLCanvasElement {
+        if (canvas.dataset.dataURL) {
+            const img = canvas.ownerDocument.createElement('img');
+            img.src = canvas.dataset.dataURL;
+            return img;
+        }
         if (this.options.inlineImages && canvas.ownerDocument) {
             const img = canvas.ownerDocument.createElement('img');
             try {
