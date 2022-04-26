@@ -44,6 +44,7 @@ import {PAINT_ORDER_LAYER} from '../../css/property-descriptors/paint-order';
 import {Renderer} from '../renderer';
 import {Context} from '../../core/context';
 import {DIRECTION} from '../../css/property-descriptors/direction';
+import {layout} from './textarea-layout';
 
 export type RenderConfigurations = RenderOptions & {
     backgroundColor: Color | null;
@@ -144,8 +145,28 @@ export class CanvasRenderer extends Renderer {
         }
     }
 
-    renderTextWithLetterSpacing(text: TextBounds, letterSpacing: number, baseline: number): void {
-        if (letterSpacing === 0) {
+    renderTextWithLetterSpacing(
+        text: TextBounds,
+        letterSpacing: number,
+        baseline: number,
+        lineHeight?: number,
+        fontSize?: number
+    ): void {
+        if (typeof lineHeight !== 'undefined' && typeof fontSize !== 'undefined') {
+            const chars = segmentGraphemes(text.text);
+            const pos = layout(
+                chars,
+                text.bounds.width,
+                (s, len) => this.ctx.measureText(s).width + letterSpacing * (len - 1)
+            );
+            const dx = text.bounds.left;
+            const dy = text.bounds.top + lineHeight / 2 + (lineHeight - fontSize) / 2;
+            for (let i = 0; i < pos.length; i++) {
+                if (pos[i][0] >= 0) {
+                    this.ctx.fillText(chars[i], pos[i][0] + dx, pos[i][1] * lineHeight + dy);
+                }
+            }
+        } else if (letterSpacing === 0) {
             this.ctx.fillText(text.text, text.bounds.left, text.bounds.top + baseline);
         } else {
             const letters = segmentGraphemes(text.text);
@@ -421,10 +442,16 @@ export class CanvasRenderer extends Renderer {
             ]);
 
             this.ctx.clip();
+            const lineHeight =
+                container instanceof TextareaElementContainer
+                    ? computeLineHeight(styles.lineHeight, styles.fontSize.number)
+                    : undefined;
             this.renderTextWithLetterSpacing(
                 new TextBounds(container.value, textBounds),
                 styles.letterSpacing,
-                baseline + bounds.height / 2 - middle
+                baseline + bounds.height / 2 - middle, // 仅限单行模式，不适用于textare多行模式
+                lineHeight,
+                styles.fontSize.number
             );
             this.ctx.restore();
             this.ctx.textBaseline = 'alphabetic';
