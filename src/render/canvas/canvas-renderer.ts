@@ -160,7 +160,7 @@ export class CanvasRenderer extends Renderer {
                 (s, len) => this.ctx.measureText(s).width + letterSpacing * (len - 1)
             );
             const dx = text.bounds.left;
-            const dy = text.bounds.top + lineHeight / 2 + (lineHeight - fontSize) / 2;
+            const dy = text.bounds.top + (lineHeight + fontSize) / 2;
             for (let i = 0; i < pos.length; i++) {
                 if (pos[i][0] >= 0) {
                     this.ctx.fillText(chars[i], pos[i][0] + dx, pos[i][1] * lineHeight + dy);
