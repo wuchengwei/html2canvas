@@ -61,6 +61,16 @@ export interface RenderOptions {
 
 const MASK_OFFSET = 10000;
 
+function loadDataURLToImg(dataURL: string): Promise<HTMLImageElement> {
+    return new Promise(function (resolve) {
+        const img = document.createElement('img');
+        img.onload = function () {
+            resolve(img);
+        };
+        img.src = dataURL;
+    });
+}
+
 export class CanvasRenderer extends Renderer {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -344,28 +354,47 @@ export class CanvasRenderer extends Renderer {
         }
 
         if (container instanceof IFrameElementContainer && container.tree) {
-            const iframeRenderer = new CanvasRenderer(this.context, {
-                scale: this.options.scale,
-                backgroundColor: container.backgroundColor,
-                x: 0,
-                y: 0,
-                width: container.width,
-                height: container.height
-            });
+            // iframe 内的用户操作产生的内容捕获不到，作为一种 workaround,
+            // 可以将iframe内的内容渲染成dataURL放到iframe节点的dataset属性里
+            if (container.dataURL) {
+                if (container.width && container.height) {
+                    const image = await loadDataURLToImg(container.dataURL);
+                    this.ctx.drawImage(
+                        image,
+                        0,
+                        0,
+                        container.width,
+                        container.height,
+                        container.bounds.left,
+                        container.bounds.top,
+                        container.bounds.width,
+                        container.bounds.height
+                    );
+                }
+            } else {
+                const iframeRenderer = new CanvasRenderer(this.context, {
+                    scale: this.options.scale,
+                    backgroundColor: container.backgroundColor,
+                    x: 0,
+                    y: 0,
+                    width: container.width,
+                    height: container.height
+                });
 
-            const canvas = await iframeRenderer.render(container.tree);
-            if (container.width && container.height) {
-                this.ctx.drawImage(
-                    canvas,
-                    0,
-                    0,
-                    container.width,
-                    container.height,
-                    container.bounds.left,
-                    container.bounds.top,
-                    container.bounds.width,
-                    container.bounds.height
-                );
+                const canvas = await iframeRenderer.render(container.tree);
+                if (container.width && container.height) {
+                    this.ctx.drawImage(
+                        canvas,
+                        0,
+                        0,
+                        container.width,
+                        container.height,
+                        container.bounds.left,
+                        container.bounds.top,
+                        container.bounds.width,
+                        container.bounds.height
+                    );
+                }
             }
         }
 
