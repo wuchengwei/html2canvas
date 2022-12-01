@@ -17,8 +17,9 @@ export class IFrameElementContainer extends ElementContainer {
         if (iframe.dataset.dataURL) {
             this.dataURL = iframe.dataset.dataURL;
         }
-        this.width = parseInt(iframe.width, 10) || 0;
-        this.height = parseInt(iframe.height, 10) || 0;
+        const iframeRect = iframe.getBoundingClientRect();
+        this.width = iframeRect.width;
+        this.height = iframeRect.height;
         this.backgroundColor = this.styles.backgroundColor;
         try {
             if (
