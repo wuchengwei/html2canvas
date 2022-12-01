@@ -19,9 +19,11 @@ export class SVGElementContainer extends ElementContainer {
         img.style.marginBottom = '0';
         img.style.marginLeft = '0';
         img.style.marginRight = '0';
+        // @ts-ignore
         img.style.marginInline = '0';
         img.style.marginInlineStart = '0';
         img.style.marginInlineEnd = '0';
+        // @ts-ignore
         img.style.marginBlock = '0';
         img.style.marginBlockStart = '0';
         img.style.marginBlockEnd = '0';
